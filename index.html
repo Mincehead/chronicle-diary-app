@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Modern diary app with voice-to-text and calendar tracking">
+    <title>Chronicle - Your Digital Diary</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Background Texture -->
+    <div class="texture-overlay"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1 class="logo">Chronicle</h1>
+        <nav class="nav">
+            <button class="nav-btn active" data-view="entries" aria-label="Entries view">
+                <span class="icon">📝</span>
+                <span>Entries</span>
+            </button>
+            <button class="nav-btn" data-view="calendar" aria-label="Calendar view">
+                <span class="icon">📅</span>
+                <span>Calendar</span>
+            </button>
+            <button class="nav-btn" data-view="settings" aria-label="Settings">
+                <span class="icon">⚙️</span>
+                <span>Settings</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Entry Form Section -->
+        <section class="entry-section" id="entrySection">
+            <div class="card glass-card">
+                <h2 class="section-title">New Entry</h2>
+
+                <!-- Entry Type Selector -->
+                <div class="type-selector" id="typeSelector">
+                    <button class="type-btn active" data-type="event" aria-label="Event entry type">
+                        <span class="type-icon">🎯</span>
+                        <span>Event</span>
+                    </button>
+                    <button class="type-btn" data-type="thought" aria-label="Thought entry type">
+                        <span class="type-icon">💭</span>
+                        <span>Thought</span>
+                    </button>
+                    <button class="type-btn" data-type="habit" aria-label="Habit entry type">
+                        <span class="type-icon">✅</span>
+                        <span>Habit</span>
+                    </button>
+                    <button class="type-btn" data-type="food" aria-label="Food entry type">
+                        <span class="type-icon">🍽️</span>
+                        <span>Food</span>
+                    </button>
+                    <button class="type-btn" data-type="health" aria-label="Health entry type">
+                        <span class="type-icon">❤️</span>
+                        <span>Health</span>
+                    </button>
+                </div>
+
+                <!-- Entry Form -->
+                <form class="entry-form" id="entryForm">
+                    <!-- Text Entry Mode (for Event & Thought) -->
+                    <div class="form-group text-entry-mode" id="textEntryMode">
+                        <label for="entryContent" class="sr-only">Entry content</label>
+                        <textarea id="entryContent" class="entry-input" placeholder="What's on your mind?"
+                            rows="6"></textarea>
+
+                        <!-- Voice Control -->
+                        <button type="button" class="voice-btn" id="voiceBtn" aria-label="Start voice recording">
+                            <span class="mic-icon">🎤</span>
+                            <span class="voice-text">Click to speak</span>
+                        </button>
+
+                        <label for="entryTags">Tags (optional)</label>
+                        <input type="text" id="entryTags" class="tag-input" placeholder="Add tags separated by commas">
+
+                        <button type="submit" class="submit-btn">
+                            <span>Save Entry</span>
+                            <span class="btn-glow"></span>
+                        </button>
+                    </div>
+
+                    <!-- Quick-Log Mode (for Habit, Food, Health) -->
+                    <div class="form-group quick-log-mode hidden" id="quickLogMode">
+                        <label for="quickLogSelect">Quick Log</label>
+                        <select id="quickLogSelect" class="quick-log-select">
+                            <option value="">Select an option...</option>
+                        </select>
+
+                        <div class="quick-log-actions">
+                            <button type="button" class="add-custom-btn" id="addCustomBtn">
+                                + Add Custom Option
+                            </button>
+                        </div>
+
+                        <!-- Add Custom Option Form -->
+                        <div class="add-custom-form hidden" id="addCustomForm">
+                            <input type="text" id="customOptionInput" class="custom-option-input"
+                                placeholder="Enter new option">
+                            <div class="custom-form-buttons">
+                                <button type="button" class="custom-save-btn" id="saveCustomBtn">Save</button>
+                                <button type="button" class="custom-cancel-btn" id="cancelCustomBtn">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Entries List -->
+            <div class="entries-list" id="entriesList">
+                <h2 class="section-title">Recent Entries</h2>
+                <div id="entriesContainer"></div>
+            </div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section class="calendar-section hidden" id="calendarSection">
+            <div class="card glass-card">
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" id="prevMonth" aria-label="Previous month">‹</button>
+                    <h2 class="calendar-title" id="calendarTitle">Month Year</h2>
+                    <button class="calendar-nav-btn" id="nextMonth" aria-label="Next month">›</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <!-- Selected Date Entries -->
+            <div class="date-entries" id="dateEntries"></div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="settings-section hidden" id="settingsSection">
+            <div class="card glass-card">
+                <h2 class="section-title">Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Data Management</h3>
+                    <button class="settings-btn" id="exportBtn">Export Data</button>
+                    <button class="settings-btn" id="importBtn">Import Data</button>
+                    <input type="file" id="importFile" accept=".json" class="hidden">
+                </div>
+
+                <div class="settings-group">
+                    <h3>Preferences</h3>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="darkModeToggle" checked>
+                        <span>Enhanced Dark Mode</span>
+                    </label>
+                </div>
+
+                <div class="settings-group">
+                    <h3>App Info</h3>
+                    <p class="info-text">Chronicle v1.0 - Your personal digital diary</p>
+                    <p class="info-text">Data is stored locally in your browser</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/entries.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/quicklog.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

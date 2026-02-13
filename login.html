@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronicle - Sign In</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .auth-card {
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .auth-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-gold);
+            text-shadow: var(--gold-glow);
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: var(--color-neon-green);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .form-input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            color: var(--color-neon-green);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            transition: all var(--transition-normal);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .auth-btn {
+            background: var(--color-neon-green);
+            color: var(--color-black);
+            border: none;
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--neon-glow);
+        }
+
+        .auth-btn.secondary {
+            background: transparent;
+            border: 2px solid var(--color-neon-green);
+            color: var(--color-neon-green);
+        }
+
+        .divider {
+            text-align: center;
+            color: rgba(0, 255, 0, 0.5);
+            margin: var(--spacing-lg) 0;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(0, 255, 0, 0.3);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            color: var(--color-neon-green);
+        }
+
+        .toggle-link {
+            color: var(--color-gold);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .toggle-link:hover {
+            text-shadow: var(--gold-glow);
+        }
+
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            padding: var(--spacing-sm);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid var(--color-neon-green);
+            color: var(--color-neon-green);
+            padding: var(--spacing-sm);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .local-mode-notice {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid var(--color-gold);
+            border-radius: 12px;
+            color: var(--color-gold);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="texture-overlay"></div>
+
+    <div class="auth-container">
+        <div class="card glass-card auth-card">
+            <h1 class="auth-title">Chronicle</h1>
+            <p class="auth-subtitle">Your Digital Diary</p>
+
+            <!-- Error/Success Messages -->
+            <div id="message" class="hidden"></div>
+
+            <!-- Sign In Form -->
+            <form class="auth-form" id="signInForm">
+                <input type="email" id="signInEmail" class="form-input" placeholder="Email" required>
+                <input type="password" id="signInPassword" class="form-input" placeholder="Password" required>
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+
+            <div class="divider">OR</div>
+
+            <!-- Magic Link -->
+            <form class="auth-form" id="magicLinkForm">
+                <input type="email" id="magicLinkEmail" class="form-input" placeholder="Email for magic link">
+                <button type="submit" class="auth-btn secondary">Send Magic Link</button>
+            </form>
+
+            <!-- Toggle to Sign Up -->
+            <div class="toggle-auth">
+                Don't have an account? <span class="toggle-link" id="toggleSignUp">Sign Up</span>
+            </div>
+
+            <!-- Sign Up Form (Hidden by default) -->
+            <form class="auth-form hidden" id="signUpForm">
+                <input type="email" id="signUpEmail" class="form-input" placeholder="Email" required>
+                <input type="password" id="signUpPassword" class="form-input" placeholder="Password (min 6 characters)"
+                    required minlength="6">
+                <input type="password" id="signUpConfirm" class="form-input" placeholder="Confirm Password" required>
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+
+            <!-- Local Mode Notice -->
+            <div id="localModeNotice" class="local-mode-notice hidden">
+                <strong>Local Mode</strong><br>
+                Supabase not configured. <a href="index.html"
+                    style="color: var(--color-gold); text-decoration: underline;">Continue in local-only mode</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        const messageEl = document.getElementById('message');
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const magicLinkForm = document.getElementById('magicLinkForm');
+        const toggleSignUp = document.getElementById('toggleSignUp');
+        const localModeNotice = document.getElementById('localModeNotice');
+
+        // Initialize Supabase
+        const client = initSupabase();
+
+        // Check if Supabase is configured
+        if (!client) {
+            localModeNotice.classList.remove('hidden');
+        }
+
+        // Toggle between sign in and sign up
+        toggleSignUp.addEventListener('click', () => {
+            signInForm.classList.toggle('hidden');
+            signUpForm.classList.toggle('hidden');
+            magicLinkForm.classList.toggle('hidden');
+
+            toggleSignUp.textContent = signInForm.classList.contains('hidden') ? 'Sign In' : 'Sign Up';
+            toggleSignUp.parentElement.innerHTML = signInForm.classList.contains('hidden')
+                ? 'Already have an account? <span class="toggle-link" id="toggleSignUp">Sign In</span>'
+                : 'Don\'t have an account? <span class="toggle-link" id="toggleSignUp">Sign Up</span>';
+
+            // Re-attach event listener
+            document.getElementById('toggleSignUp').addEventListener('click', arguments.callee);
+        });
+
+        // Show message
+        const showMessage = (text, isError = false) => {
+            messageEl.textContent = text;
+            messageEl.className = isError ? 'error-message' : 'success-message';
+        };
+
+        // Sign In
+        signInForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const email = document.getElementById('signInEmail').value;
+                const password = document.getElementById('signInPassword').value;
+                await Auth.signIn(email, password);
+                showMessage('Signed in successfully! Redirecting...');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        });
+
+        // Sign Up
+        signUpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const email = document.getElementById('signUpEmail').value;
+                const password = document.getElementById('signUpPassword').value;
+                const confirm = document.getElementById('signUpConfirm').value;
+
+                if (password !== confirm) {
+                    showMessage('Passwords do not match', true);
+                    return;
+                }
+
+                await Auth.signUp(email, password);
+                showMessage('Account created! Check your email to verify, then sign in.');
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        });
+
+        // Magic Link
+        magicLinkForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const email = document.getElementById('magicLinkEmail').value;
+                await Auth.signInWithMagicLink(email);
+                showMessage('Magic link sent! Check your email.');
+            } catch (error) {
+                showMessage(error.message, true);
+            }
+        });
+
+        // Check if already authenticated
+        (async () => {
+            const user = await Auth.init();
+            if (user) {
+                window.location.href = 'index.html';
+            }
+        })();
+    </script>
+</body>
+
+</html>
