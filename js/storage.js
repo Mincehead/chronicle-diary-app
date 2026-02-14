@@ -145,25 +145,35 @@ const DiaryStorage = (() => {
         const client = getSupabaseClient();
         const userId = Auth.getUserId();
 
-        if (!userId) return [];
+        // If not authenticated, fallback to IndexedDB
+        if (!userId) {
+            console.warn('User not authenticated, loading from local storage');
+            return getAllEntriesIndexedDB();
+        }
 
-        const { data, error } = await client
-            .from('entries')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
+        try {
+            const { data, error } = await client
+                .from('entries')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
 
-        if (error) throw error;
+            if (error) throw error;
 
-        // Convert to local format
-        return data.map(entry => ({
-            id: entry.id,
-            timestamp: new Date(entry.created_at).getTime(),
-            date: entry.created_at,
-            type: entry.type,
-            content: entry.content,
-            tags: entry.tags || []
-        }));
+            // Convert to local format
+            return data.map(entry => ({
+                id: entry.id,
+                timestamp: new Date(entry.created_at).getTime(),
+                date: entry.created_at,
+                type: entry.type,
+                content: entry.content,
+                tags: entry.tags || []
+            }));
+        } catch (error) {
+            // If Supabase fails, fallback to local storage
+            console.warn('Failed to fetch from Supabase, loading from local storage:', error);
+            return getAllEntriesIndexedDB();
+        }
     };
 
     /**
