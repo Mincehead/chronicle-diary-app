@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Test - Chronicle Diary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+        }
+
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #ddd;
+        }
+
+        .test-item.pending {
+            border-left-color: #ffc107;
+        }
+
+        .test-item.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .test-item.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .test-icon {
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+
+        .test-info {
+            flex: 1;
+        }
+
+        .test-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .test-result {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .status-badge.configured {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.not-configured {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .config-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .config-info code {
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-error {
+            color: #ff6b6b;
+        }
+
+        .log-success {
+            color: #51cf66;
+        }
+
+        .log-info {
+            color: #74c0fc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Backend Test Suite</h1>
+
+        <div class="test-card">
+            <div class="config-info">
+                <h3 style="margin-bottom: 10px;">Configuration Status</h3>
+                <p id="config-status">Checking Supabase configuration...</p>
+            </div>
+
+            <div class="test-section">
+                <h2>Connection Tests</h2>
+                <div id="connection-tests"></div>
+            </div>
+
+            <div class="test-section">
+                <h2>Authentication Tests</h2>
+                <div id="auth-tests"></div>
+            </div>
+
+            <div class="test-section">
+                <h2>Database Tests</h2>
+                <div id="database-tests"></div>
+            </div>
+
+            <button id="run-tests" onclick="runAllTests()">Run All Tests</button>
+
+            <div class="log-output" id="log-output">
+                <div class="log-entry log-info">Console output will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Include your modules -->
+    <script src="../js/config.js"></script>
+
+    <script>
+        const log = (message, type = 'info') => {
+            const logOutput = document.getElementById('log-output');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        };
+
+        const updateTestItem = (id, status, message) => {
+            const item = document.getElementById(id);
+            if (!item) return;
+
+            item.className = `test-item ${status}`;
+            const icon = item.querySelector('.test-icon');
+            const result = item.querySelector('.test-result');
+
+            if (status === 'success') {
+                icon.textContent = '✅';
+                result.textContent = message || 'Passed';
+            } else if (status === 'error') {
+                icon.textContent = '❌';
+                result.textContent = message || 'Failed';
+            } else {
+                icon.textContent = '⏳';
+                result.textContent = message || 'Running...';
+            }
+        };
+
+        const createTestItem = (id, name, container) => {
+            const item = document.createElement('div');
+            item.id = id;
+            item.className = 'test-item pending';
+            item.innerHTML = `
+                <div class="test-icon">⏳</div>
+                <div class="test-info">
+                    <div class="test-name">${name}</div>
+                    <div class="test-result">Pending</div>
+                </div>
+            `;
+            document.getElementById(container).appendChild(item);
+        };
+
+        // Initialize test UI
+        const initTests = () => {
+            createTestItem('test-config', 'Supabase Configuration', 'connection-tests');
+            createTestItem('test-client', 'Supabase Client Initialization', 'connection-tests');
+            createTestItem('test-auth-init', 'Auth Module Initialization', 'auth-tests');
+            createTestItem('test-session', 'Session Check', 'auth-tests');
+            createTestItem('test-db-structure', 'Database Schema Check', 'database-tests');
+        };
+
+        // Check configuration
+        const checkConfig = () => {
+            const statusEl = document.getElementById('config-status');
+
+            try {
+                initSupabase();
+                const client = getSupabaseClient();
+
+                if (client) {
+                    statusEl.innerHTML = `
+                        <span class="status-badge configured">✓ Configured</span>
+                        <p style="margin-top: 10px;">Supabase client is ready!</p>
+                    `;
+                    log('Supabase configuration valid', 'success');
+                    return true;
+                } else {
+                    statusEl.innerHTML = `
+                        <span class="status-badge not-configured">⚠ Not Configured</span>
+                        <p style="margin-top: 10px;">Please update <code>js/config.js</code> with your Supabase credentials.</p>
+                        <p style="margin-top: 5px; font-size: 0.9rem; color: #666;">
+                            You need: Project URL and Anon Key from Supabase Dashboard → Project Settings → API
+                        </p>
+                    `;
+                    log('Supabase not configured - running in local mode', 'error');
+                    return false;
+                }
+            } catch (error) {
+                statusEl.innerHTML = `
+                    <span class="status-badge not-configured">❌ Error</span>
+                    <p style="margin-top: 10px; color: #dc3545;">${error.message}</p>
+                `;
+                log(`Configuration error: ${error.message}`, 'error');
+                return false;
+            }
+        };
+
+        // Run all tests
+        async function runAllTests() {
+            const button = document.getElementById('run-tests');
+            button.disabled = true;
+            button.textContent = 'Running tests...';
+
+            log('Starting test suite...', 'info');
+
+            // Test 1: Configuration
+            log('Test 1: Checking Supabase configuration...', 'info');
+            const isConfigured = checkConfig();
+            updateTestItem('test-config',
+                isConfigured ? 'success' : 'error',
+                isConfigured ? 'Configuration valid' : 'Not configured'
+            );
+
+            if (!isConfigured) {
+                log('Tests cannot proceed without Supabase configuration', 'error');
+                button.disabled = false;
+                button.textContent = 'Run All Tests';
+                return;
+            }
+
+            // Test 2: Client initialization
+            log('Test 2: Initializing Supabase client...', 'info');
+            try {
+                const client = getSupabaseClient();
+                if (client && client.auth) {
+                    updateTestItem('test-client', 'success', 'Client initialized successfully');
+                    log('Supabase client initialized', 'success');
+                } else {
+                    throw new Error('Client not properly initialized');
+                }
+            } catch (error) {
+                updateTestItem('test-client', 'error', error.message);
+                log(`Client initialization failed: ${error.message}`, 'error');
+            }
+
+            // Test 3: Auth module
+            log('Test 3: Testing authentication module...', 'info');
+            try {
+                const client = getSupabaseClient();
+                const { data, error } = await client.auth.getSession();
+
+                if (error) throw error;
+
+                updateTestItem('test-auth-init', 'success', 'Auth module working');
+                log('Auth module initialized successfully', 'success');
+            } catch (error) {
+                updateTestItem('test-auth-init', 'error', error.message);
+                log(`Auth module error: ${error.message}`, 'error');
+            }
+
+            // Test 4: Session check
+            log('Test 4: Checking session...', 'info');
+            try {
+                const client = getSupabaseClient();
+                const { data: { session }, error } = await client.auth.getSession();
+
+                if (error) throw error;
+
+                if (session) {
+                    updateTestItem('test-session', 'success', `Logged in as: ${session.user.email}`);
+                    log(`User session found: ${session.user.email}`, 'success');
+                } else {
+                    updateTestItem('test-session', 'success', 'No active session (not logged in)');
+                    log('No active session - user needs to log in', 'info');
+                }
+            } catch (error) {
+                updateTestItem('test-session', 'error', error.message);
+                log(`Session check failed: ${error.message}`, 'error');
+            }
+
+            // Test 5: Database structure
+            log('Test 5: Checking database schema...', 'info');
+            try {
+                const client = getSupabaseClient();
+
+                // Try to query the entries table
+                const { data, error } = await client
+                    .from('entries')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    if (error.message.includes('relation') || error.message.includes('does not exist')) {
+                        throw new Error('Table "entries" not found. Please run supabase-schema.sql in SQL Editor');
+                    }
+                    throw error;
+                }
+
+                updateTestItem('test-db-structure', 'success', 'Database schema is set up correctly');
+                log('Database schema verified successfully', 'success');
+            } catch (error) {
+                updateTestItem('test-db-structure', 'error', error.message);
+                log(`Database schema error: ${error.message}`, 'error');
+            }
+
+            log('Test suite completed!', 'success');
+            button.disabled = false;
+            button.textContent = 'Run All Tests';
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Backend test suite loaded', 'info');
+            initTests();
+            checkConfig();
+        });
+    </script>
+</body>
+
+</html>
