@@ -178,11 +178,20 @@
         const contentEl = document.getElementById('entryContent');
         if (!contentEl) return;
 
+        // Only add final results to the permanent transcript
         if (result.isFinal && result.final) {
-            transcribedText += result.final + ' ';
+            // Add space before appending if there's already content
+            if (transcribedText && !transcribedText.endsWith(' ')) {
+                transcribedText += ' ';
+            }
+            transcribedText += result.final;
+            // Trim and ensure single space between sentences
+            transcribedText = transcribedText.replace(/\s+/g, ' ').trim();
             contentEl.value = transcribedText;
         } else if (result.interim) {
-            contentEl.value = transcribedText + result.interim;
+            // Show interim results temporarily without saving them
+            const displayText = transcribedText ? transcribedText + ' ' + result.interim : result.interim;
+            contentEl.value = displayText;
         }
     };
 

@@ -44,6 +44,7 @@ const VoiceRecorder = (() => {
             let finalTranscript = '';
             let interimTranscript = '';
 
+            // Only process new results from the last resultIndex
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
@@ -53,7 +54,8 @@ const VoiceRecorder = (() => {
                 }
             }
 
-            if (onTranscriptCallback) {
+            // Only call callback if there's actually new content
+            if (onTranscriptCallback && (finalTranscript || interimTranscript)) {
                 onTranscriptCallback({
                     final: finalTranscript.trim(),
                     interim: interimTranscript.trim(),
