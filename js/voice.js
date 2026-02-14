@@ -35,8 +35,8 @@ const VoiceRecorder = (() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
 
-        // Configure recognition - use non-continuous mode to prevent duplication
-        recognition.continuous = false;
+        // Configure recognition - continuous mode to avoid beeping
+        recognition.continuous = true;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
         recognition.maxAlternatives = 1;
@@ -46,11 +46,11 @@ const VoiceRecorder = (() => {
             let finalTranscript = '';
             let interimTranscript = '';
 
-            // Process all results in this event
-            for (let i = 0; i < event.results.length; i++) {
+            // Only process results from resultIndex onwards (new results only)
+            for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    // Only add if we haven't processed this index before
+                    // Double-check we haven't processed this index
                     if (i > lastProcessedIndex) {
                         finalTranscript += transcript + ' ';
                         lastProcessedIndex = i;
@@ -75,14 +75,8 @@ const VoiceRecorder = (() => {
             console.error('Speech recognition error:', event.error);
 
             if (event.error === 'no-speech') {
-                // Automatically restart on no-speech
-                if (isRecording) {
-                    setTimeout(() => {
-                        if (isRecording) {
-                            start();
-                        }
-                    }, 100);
-                }
+                // Just continue, don't restart
+                return;
             } else if (event.error !== 'aborted') {
                 if (onErrorCallback) {
                     onErrorCallback(event.error);
@@ -95,7 +89,11 @@ const VoiceRecorder = (() => {
             if (isRecording) {
                 setTimeout(() => {
                     if (isRecording) {
-                        start();
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            // Ignore if already running
+                        }
                     }
                 }, 100);
             }
