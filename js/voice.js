@@ -8,6 +8,7 @@ const VoiceRecorder = (() => {
     let isRecording = false;
     let onTranscriptCallback = null;
     let onErrorCallback = null;
+    let lastProcessedIndex = -1; // Track what we've already processed
 
     /**
      * Check if Web Speech API is supported
@@ -34,27 +35,32 @@ const VoiceRecorder = (() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
 
-        // Configure recognition
-        recognition.continuous = true;
+        // Configure recognition - use non-continuous mode to prevent duplication
+        recognition.continuous = false;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
+        recognition.maxAlternatives = 1;
 
         // Handle results
         recognition.onresult = (event) => {
             let finalTranscript = '';
             let interimTranscript = '';
 
-            // Only process new results from the last resultIndex
-            for (let i = event.resultIndex; i < event.results.length; i++) {
+            // Process all results in this event
+            for (let i = 0; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    finalTranscript += transcript + ' ';
+                    // Only add if we haven't processed this index before
+                    if (i > lastProcessedIndex) {
+                        finalTranscript += transcript + ' ';
+                        lastProcessedIndex = i;
+                    }
                 } else {
                     interimTranscript += transcript;
                 }
             }
 
-            // Only call callback if there's actually new content
+            // Only call callback if there's new content
             if (onTranscriptCallback && (finalTranscript || interimTranscript)) {
                 onTranscriptCallback({
                     final: finalTranscript.trim(),
@@ -72,22 +78,25 @@ const VoiceRecorder = (() => {
                 // Automatically restart on no-speech
                 if (isRecording) {
                     setTimeout(() => {
-                        if (isRecording) start();
+                        if (isRecording) {
+                            start();
+                        }
                     }, 100);
                 }
-            } else {
+            } else if (event.error !== 'aborted') {
                 if (onErrorCallback) {
                     onErrorCallback(event.error);
                 }
             }
         };
 
-        // Handle end
+        // Handle end - auto-restart if still recording
         recognition.onend = () => {
-            // Auto-restart if still recording
             if (isRecording) {
                 setTimeout(() => {
-                    if (isRecording) start();
+                    if (isRecording) {
+                        start();
+                    }
                 }, 100);
             }
         };
@@ -106,10 +115,11 @@ const VoiceRecorder = (() => {
 
         try {
             isRecording = true;
+            lastProcessedIndex = -1; // Reset the processed index
             recognition.start();
         } catch (error) {
             // Already started, ignore
-            if (error.message.includes('already started')) {
+            if (error.message && error.message.includes('already started')) {
                 return;
             }
             console.error('Error starting recognition:', error);
@@ -123,6 +133,7 @@ const VoiceRecorder = (() => {
         if (!recognition) return;
 
         isRecording = false;
+        lastProcessedIndex = -1; // Reset on stop
         try {
             recognition.stop();
         } catch (error) {
