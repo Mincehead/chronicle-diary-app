@@ -6,7 +6,7 @@
 
 const DiaryStorage = (() => {
     const DB_NAME = 'ChronicleDB';
-    const DB_VERSION = 1;
+    const DB_VERSION = 2; // Incremented to trigger upgrade and create object stores
     const STORE_NAME = 'entries';
 
     let db = null;
