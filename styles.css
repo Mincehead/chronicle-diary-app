@@ -624,23 +624,28 @@ body {
     }
 
     .calendar-days {
-        gap: 4px;
+        gap: 2px;
+    }
+
+    .calendar-day-header {
+        font-size: 0.7rem;
+        padding: 2px;
     }
 
     .calendar-cell {
-        padding: 4px;
-        min-height: 50px;
+        padding: 2px;
+        min-height: 45px;
     }
 
     .day-number {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .entry-indicator {
-        font-size: 0.6rem;
-        padding: 1px 4px;
-        bottom: 2px;
-        right: 2px;
+        font-size: 0.55rem;
+        padding: 1px 3px;
+        bottom: 1px;
+        right: 1px;
     }
 
     /* Entry Cards */
@@ -705,12 +710,27 @@ body {
         font-size: 0.7rem;
     }
 
+    .calendar-days {
+        gap: 1px;
+    }
+
+    .calendar-day-header {
+        font-size: 0.65rem;
+        padding: 1px;
+    }
+
     .calendar-cell {
-        min-height: 45px;
+        min-height: 40px;
+        padding: 1px;
     }
 
     .day-number {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
+    }
+
+    .entry-indicator {
+        font-size: 0.5rem;
+        padding: 1px 2px;
     }
 }
 
