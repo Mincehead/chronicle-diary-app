@@ -81,21 +81,27 @@ const DiaryStorage = (() => {
             return createEntryIndexedDB(entryData);
         }
 
-        const entry = {
-            user_id: userId,
-            type: entryData.type || 'event',
-            content: entryData.content,
-            tags: entryData.tags || []
-        };
+        try {
+            const entry = {
+                user_id: userId,
+                type: entryData.type || 'event',
+                content: entryData.content,
+                tags: entryData.tags || []
+            };
 
-        const { data, error } = await client
-            .from('entries')
-            .insert([entry])
-            .select()
-            .single();
+            const { data, error } = await client
+                .from('entries')
+                .insert([entry])
+                .select()
+                .single();
 
-        if (error) throw error;
-        return data.id;
+            if (error) throw error;
+            return data.id;
+        } catch (error) {
+            // If Supabase fails, fallback to local storage
+            console.warn('Failed to save to Supabase, saving to local storage:', error);
+            return createEntryIndexedDB(entryData);
+        }
     };
 
     /**
