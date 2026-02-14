@@ -79,7 +79,11 @@ const DiaryStorage = (() => {
         const client = getSupabaseClient();
         const userId = Auth.getUserId();
 
-        if (!userId) throw new Error('User not authenticated');
+        // If not authenticated, fallback to IndexedDB  
+        if (!userId) {
+            console.warn('User not authenticated, falling back to local storage');
+            return createEntryIndexedDB(entryData);
+        }
 
         const entry = {
             user_id: userId,

@@ -75,12 +75,21 @@ const VoiceRecorder = (() => {
             console.error('Speech recognition error:', event.error);
 
             if (event.error === 'no-speech') {
-                // Just continue, don't restart
+                // Don't notify user or restart, just let it continue listening
                 return;
-            } else if (event.error !== 'aborted') {
+            } else if (event.error === 'audio-capture') {
+                if (onErrorCallback) {
+                    onErrorCallback('Microphone not available');
+                }
+                isRecording = false;
+            } else if (event.error === 'not-allowed') {
                 if (onErrorCallback) {
                     onErrorCallback(event.error);
                 }
+                isRecording = false;
+            } else if (event.error !== 'aborted') {
+                // Log other errors but don't stop recording
+                console.warn('Non-critical speech error:', event.error);
             }
         };
 
