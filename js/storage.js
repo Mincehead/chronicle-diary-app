@@ -20,13 +20,9 @@ const DiaryStorage = (() => {
         // Check if Supabase is configured
         useSupabase = isSupabaseConfigured();
 
-        if (useSupabase) {
-            console.log('✓ Using Supabase for storage');
-            return null;
-        }
-
-        // Fallback to IndexedDB
-        console.log('Using IndexedDB for local storage');
+        // ALWAYS initialize IndexedDB as a fallback, even if Supabase is configured
+        // This allows local storage when user is not authenticated
+        console.log(useSupabase ? '✓ Using Supabase for storage (with local fallback)' : 'Using IndexedDB for local storage');
         return initIndexedDB();
     };
 
