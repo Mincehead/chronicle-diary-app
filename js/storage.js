@@ -210,15 +210,21 @@ const DiaryStorage = (() => {
      */
     const getEntry = async (id) => {
         if (useSupabase) {
-            const client = getSupabaseClient();
-            const { data, error } = await client
-                .from('entries')
-                .select('*')
-                .eq('id', id)
-                .single();
+            try {
+                const client = getSupabaseClient();
+                const { data, error } = await client
+                    .from('entries')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
 
-            if (error) throw error;
-            return data;
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                // Fallback to IndexedDB if Supabase fails
+                console.warn('Failed to fetch from Supabase, trying local storage:', error);
+                return getEntryIndexedDB(id);
+            }
         }
         return getEntryIndexedDB(id);
     };
